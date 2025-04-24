@@ -1,77 +1,100 @@
-const tareaInput = document.getElementById('tareaInput');
-const añadirBtn = document.getElementById('añadirBtn');
-const listaTareas = document.getElementById('listaTareas');
 
-    añadirBtn.addEventListener('click', añadirTarea);
+const input = document.getElementById('tareaInput');
+const btn = document.getElementById('añadirBtn');
+const ul = document.getElementById('listaTareas');
+const borrarTodoBtn = document.getElementById('borrarTodo');
 
 
-    function añadirTarea() {
-    const tareaTexto = tareaInput.value; 
-
-         if (tareaTexto !== "") { 
-            const nuevaTarea = document.createElement('li'); 
-            const spanTexto = document.createElement('span'); 
-            spanTexto.textContent = tareaTexto;
-
-            
-            spanTexto.addEventListener('click', () => {
-            spanTexto.classList.toggle('tachado')
-            });
-
-            const botonEditar = document.createElement('button');
-            botonEditar.textContent = 'Editar';
-            botonEditar.classList.add('editar');
-            botonEditar.addEventListener('click', () => editarTarea(nuevaTarea, spanTexto));
-
-             
-            const botonEliminar = document.createElement('button');
-            botonEliminar.textContent = 'Eliminar';
-            botonEliminar.addEventListener('click', eliminarTarea);
-
-               
-            const contenedorBotones = document.createElement('div');
-            contenedorBotones.classList.add('botones');
-            contenedorBotones.appendChild(botonEditar);
-            contenedorBotones.appendChild(botonEliminar);
-
-               
-            nuevaTarea.appendChild(spanTexto);
-            nuevaTarea.appendChild(contenedorBotones);
-
-               
-            listaTareas.appendChild(nuevaTarea);
-
-               
-            tareaInput.value = '';
-        }
+window.addEventListener('load', function () {
+    let cosas = localStorage.getItem('cosasGuardadas');
+    if (cosas) {
+        ul.innerHTML = cosas;
+        ponerEventosOtraVez();
     }
+});
 
-       
-    function eliminarTarea(event) {
-        const tarea = event.target.parentElement.parentElement; 
-        listaTareas.removeChild(tarea); 
-        }
 
-        
-    function editarTarea(liElemento, spanTexto) {
-        const nuevoInput = document.createElement('input'); 
-        nuevoInput.type = 'text';
-        nuevoInput.value = spanTexto.textContent; 
+btn.addEventListener('click', function () {
+    let texto = input.value;
 
-            
-        const botonGuardar = document.createElement('button');
-        botonGuardar.textContent = 'Guardar';
-        botonGuardar.classList.add('editar');
-        botonGuardar.addEventListener('click', () => {
-            spanTexto.textContent = nuevoInput.value; 
-            liElemento.replaceChild(spanTexto, nuevoInput); 
-            liElemento.querySelector('.editar').textContent = 'Editar'; 
+    if (texto !== '') {
+        let li = document.createElement('li');
+        let span = document.createElement('span');
+        span.textContent = texto;
+
+      
+        span.addEventListener('click', function () {
+            span.classList.toggle('tachado');
+            guardar();
         });
 
-            
-        liElemento.replaceChild(nuevoInput, spanTexto);
+     
+        let editar = document.createElement('button');
+        editar.textContent = 'Editar';
+        editar.addEventListener('click', function () {
+            let nuevo = prompt('Cambiar texto:', span.textContent);
+            if (nuevo !== '' && nuevo !== null) {
+                span.textContent = nuevo;
+                guardar();
+            }
+        });
 
-            
-        liElemento.querySelector('.editar').textContent = 'Guardar';
-        liElemento.querySelector('.editar').replaceWith(botonGuardar);
+        let eliminar = document.createElement('button');
+        eliminar.textContent = 'Eliminar';
+        eliminar.addEventListener('click', function () {
+            ul.removeChild(li);
+            guardar();
+        });
+
+    
+        li.appendChild(span);
+        li.appendChild(editar);
+        li.appendChild(eliminar);
+        ul.appendChild(li);
+
+        input.value = '';
+        guardar();
+    } else {
+        console.log('No escribiste nada');
     }
+});
+
+// borrar todo//
+borrarTodoBtn.addEventListener('click', function () {
+    ul.innerHTML = '';
+    localStorage.removeItem('cosasGuardadas'); 
+});
+
+
+function guardar() {
+    localStorage.setItem('cosasGuardadas', ul.innerHTML);
+}
+
+
+function ponerEventosOtraVez() {
+    let lis = ul.querySelectorAll('li');
+
+    lis.forEach(function (li) {
+        let texto = li.querySelector('span');
+        let editar = li.querySelector('button:nth-of-type(1)');
+        let eliminar = li.querySelector('button:nth-of-type(2)');
+
+        texto.addEventListener('click', function () {
+            texto.classList.toggle('tachado');
+            guardar();
+        });
+
+        editar.addEventListener('click', function () {
+            let nuevo = prompt('Cambiar texto:', texto.textContent);
+            if (nuevo !== '' && nuevo !== null) {
+                texto.textContent = nuevo;
+                guardar();
+            }
+        });
+
+        eliminar.addEventListener('click', function () {
+            li.remove();
+            guardar();
+        });
+    });
+}
